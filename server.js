@@ -20,7 +20,7 @@ const app = express();
 const HTTP_PORT = process.env.PORT || 8080;
 
 app.use(bodyParser.urlencoded({ extended: true })); 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, 'views/home.html'));
