@@ -11,38 +11,38 @@
 ********************************************************************************/ 
 
 
-const express = require('express');
-const path = require('path');
-const collegeData = require('./collegeData');
-const bodyParser = require('body-parser'); 
-
+const express = require("express");
+const path = require("path");
+const data = require("./collegeData.js");
 const app = express();
+
 const HTTP_PORT = process.env.PORT || 8080;
 
-app.use(bodyParser.urlencoded({ extended: true })); 
-app.use(express.static('public'));
+app.use(express.static("/public"));
+
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, 'views/home.html'));
+    res.sendFile(path.join(__dirname, "/views/home.html"));
 });
 
 app.get("/about", (req, res) => {
-    res.sendFile(path.join(__dirname, 'views/about.html'));
+    res.sendFile(path.join(__dirname, "/views/about.html"));
 });
 
 app.get("/htmlDemo", (req, res) => {
-    res.sendFile(path.join(__dirname, 'views/htmlDemo.html'));
+    res.sendFile(path.join(__dirname, "/views/htmlDemo.html"));
 });
 
 app.get("/students", (req, res) => {
     if (req.query.course) {
-        collegeData.getStudentsByCourse(req.query.course).then((data) => {
+        data.getStudentsByCourse(req.query.course).then((data) => {
             res.json(data);
         }).catch((err) => {
             res.json({ message: "no results" });
         });
     } else {
-        collegeData.getAllStudents().then((data) => {
+        data.getAllStudents().then((data) => {
             res.json(data);
         }).catch((err) => {
             res.json({ message: "no results" });
@@ -51,38 +51,32 @@ app.get("/students", (req, res) => {
 });
 
 app.get("/students/add", (req, res) => {
-    res.sendFile(path.join(__dirname, 'views/addStudent.html'));
+    res.sendFile(path.join(__dirname, "/views/addStudent.html"));
 });
 
 app.post("/students/add", (req, res) => {
-    collegeData.addStudent(req.body).then(() => {
+    data.addStudent(req.body).then(() => {
         res.redirect("/students");
+    });
+});
+
+app.get("/student/:studentNum", (req, res) => {
+    data.getStudentByNum(req.params.studentNum).then((data) => {
+        res.json(data);
     }).catch((err) => {
-        res.status(500).send("Unable to add student: " + err);
+        res.json({ message: "no results" });
     });
 });
 
 app.get("/tas", (req, res) => {
-    collegeData.getTAs().then((data) => {
+    data.getTAs().then((data) => {
         res.json(data);
-    }).catch((err) => {
-        res.json({ message: "no results" });
     });
 });
 
 app.get("/courses", (req, res) => {
-    collegeData.getCourses().then((data) => {
+    data.getCourses().then((data) => {
         res.json(data);
-    }).catch((err) => {
-        res.json({ message: "no results" });
-    });
-});
-
-app.get("/student/:num", (req, res) => {
-    collegeData.getStudentByNum(req.params.num).then((data) => {
-        res.json(data);
-    }).catch((err) => {
-        res.json({ message: "no results" });
     });
 });
 
@@ -90,10 +84,12 @@ app.use((req, res) => {
     res.status(404).send("Page Not Found");
 });
 
-collegeData.initialize().then(() => {
-    app.listen(HTTP_PORT, () => {
-        console.log(`Server listening on port ${HTTP_PORT}`);
+data.initialize().then(function () {
+    app.listen(HTTP_PORT, function () {
+        console.log("app listening on: " + HTTP_PORT);
     });
-}).catch((err) => {
-    console.log(`Unable to start server: ${err}`);
+}).catch(function (err) {
+    console.log("unable to start server: " + err);
 });
+
+module.exports = app;
